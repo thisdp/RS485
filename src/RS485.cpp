@@ -84,14 +84,14 @@ void RS485::readBack(){
 
 void RS485::beginTransmission(){
   setMode(ModeTX);
-  delayMicroseconds(startDelay);
+  if(startDelay) delayMicroseconds(startDelay);
   readBackCount = 0;
   readBackCountTotal = 0;
 }
 
 void RS485::endTransmission(){
   flush(true);
-  delayMicroseconds(stopDelay);
+  if(stopDelay) delayMicroseconds(stopDelay);
   setMode(ModeRX);
   if(!hasReadBack || !readBackCountTotal) return;
   uint32_t ms = millis();
