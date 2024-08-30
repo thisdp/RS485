@@ -1,4 +1,5 @@
 #pragma once
+#include "Arduino.h"
 #include "HardwareSerial.h"
 
 class RS485Config{
@@ -19,6 +20,7 @@ public:
   constexpr static uint8_t ModeRX = 0x02;
 	RS485(int uart_nr);
   RS485(const HardwareSerial& serial);
+  void setDebugStream(Stream &dbStream);
   void begin(size_t baud, uint32_t config = SERIAL_8N1, int8_t rxPin=-1, int8_t txPin=-1, int8_t dePin=-1, int8_t rePin = -1, bool readBack = false);
   void begin(RS485Config conf);
   void setDelay(uint32_t start, uint32_t stop);
@@ -40,4 +42,5 @@ public:
   int8_t pinRE; // Read Enable Pin
   int8_t pinTx; // TX Pin
   int8_t pinRx; // RX Pin
+  Stream *debugStream;
 };
