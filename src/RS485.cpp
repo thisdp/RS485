@@ -1,13 +1,7 @@
 #include "RS485.h"
 
-RS485::RS485(int uart_nr):HardwareSerial(uart_nr){
+RS485::RS485(HardwareSerial& hwSerial):serial(&hwSerial),errorFlag(0),debugStream(0){
 	setDelay(0,0);
-	debugStream = 0;
-}
-
-RS485::RS485(const HardwareSerial& serial):HardwareSerial(serial){
-	setDelay(0,0);
-	debugStream = 0;
 }
 
 void RS485::setWriteEnabled(bool enabled) {
@@ -40,11 +34,11 @@ void RS485::begin(size_t baud, uint32_t config, int8_t rxPin, int8_t txPin, int8
 	pinRE = rePin;
 	hasReadBack = readBack;
 #if defined(ESP32)
-	((HardwareSerial*) this)->begin(baud,config,rxPin,txPin);
+	serial->begin(baud,config,rxPin,txPin);
 #else
-	((HardwareSerial*) this)->setRx(rxPin);
-	((HardwareSerial*) this)->setTx(txPin);
-	((HardwareSerial*) this)->begin(baud,config);
+	serial->setRx(rxPin);
+	serial->setTx(txPin);
+	serial->begin(baud,config);
 #endif
 	setDelay(0,0);
 	if(pinDE != -1){
@@ -73,14 +67,14 @@ void RS485::send(uint8_t *data,uint16_t length){
 }
 
 size_t RS485::write(uint8_t c){
-	HardwareSerial::write(c);
+	serial->write(c);
 	readBackCountTotal += 1;
 	readBack();
 	return 1;
 }
 
 size_t RS485::write(const uint8_t *buffer, size_t size){
-	HardwareSerial::write(buffer,size);
+	serial->write(buffer,size);
 	readBackCountTotal += size;
 	readBack();
 	return size;
@@ -113,10 +107,12 @@ void RS485::endTransmission(){
 	uint32_t ms = millis();
 	while(readBackCountTotal-readBackCount){
 	if(available()){
+		readBackFailed = false;
 		read();
 		readBackCount++;
 		ms = millis();
 	}else if(millis()-ms>=100){
+		readBackFailed = true;
 		if(debugStream){
 			debugStream->print("[Error] 485 Read Back Failed Read/Total:");
 			debugStream->print(readBackCount);
