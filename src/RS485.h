@@ -32,7 +32,11 @@ public:
   size_t write(const uint8_t *buffer, size_t size);
   inline int available() { return serial->available(); }
   inline int read() { return serial->read(); }
+#if defined(CONFIG_IDF_TARGET_ESP32)
+  inline void flush() { serial->flush(true); }
+#else
   inline void flush() { serial->flush(); }
+#endif
   inline int peek() { return serial->peek(); }
   void endTransmission();
   void readBack();

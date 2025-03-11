@@ -96,11 +96,7 @@ void RS485::beginTransmission(){
 }
 
 void RS485::endTransmission(){
-#if defined(CONFIG_IDF_TARGET_ESP32)
-	flush(true);
-#else
 	flush();
-#endif
 	if(stopDelay) delayMicroseconds(stopDelay);
 	setMode(ModeRX);
 	if(!hasReadBack || !readBackCountTotal) return;
